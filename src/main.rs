@@ -1,14 +1,12 @@
-
-
 use bevy::prelude::*;
-mod physics;
 mod meshes;
-mod setup;
 mod model;
+mod physics;
+mod setup;
 mod systems;
 use bevy_rapier3d::prelude as P;
-pub use physics::colliders;
 pub use meshes::primitives;
+pub use physics::colliders;
 use physics::rigid_bodies;
 
 //    fn build(&self, app: &mut AppBuilder) {
@@ -39,27 +37,18 @@ fn main() {
     let a = 54;
     App::build()
         .insert_resource(Msaa { samples: 4 })
- //       .add_startup_stagrtup_stage(CoreStage::Startup, "player", SystemStage::parallel())
-        .add_startup_stage( "player",SystemStage::parallel())
-        .add_startup_stage_after("player" ,"lab",SystemStage::parallel())
+        //       .add_startup_stagrtup_stage(CoreStage::Startup, "player", SystemStage::parallel())
+        .add_startup_stage("player", SystemStage::parallel())
+        .add_startup_stage_after("player", "lab", SystemStage::parallel())
+        .add_startup_system_to_stage("player", setup::setup_player.system())
+        .add_startup_system_to_stage("lab", setup::setup_labyrinth.system())
         .add_plugins(DefaultPlugins)
         .add_plugin(P::RapierPhysicsPlugin::<P::NoUserData>::default())
         .add_startup_system(setup::setup_plane.system())
         .add_startup_system(setup::setup_light_camera.system())
         .add_system(systems::move_player.system())
-        .add_startup_system_to_stage("player",setup::setup_player.system())
-        .add_startup_system_to_stage("lab",setup::setup_labyrinth.system())
         .run();
-
 }
-
-
-
-
-
-
-
-
 
 //fn setup_cubes(
 //    mut commands: Commands,
