@@ -1,0 +1,3 @@
+* 1) Config
+* 2) Camera
+3) Move player

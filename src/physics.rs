@@ -24,9 +24,6 @@ pub mod colliders {
         }
     }
 
-    pub fn ball(size: f32) -> f32 {
-        size
-    }
 }
 pub mod rigid_bodies {
 

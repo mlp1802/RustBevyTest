@@ -6,6 +6,7 @@ mod setup;
 mod systems;
 use bevy_rapier3d::prelude as P;
 pub use meshes::primitives;
+use model::Config;
 pub use physics::colliders;
 use physics::rigid_bodies;
 
@@ -34,9 +35,16 @@ fn main() {
     //        .add_startup_system(setup_physics.system())
     //        .add_system(print_ball_altitude.system())
     //        .run();
+    let config:Config = Config {
+        start_x:0.0,
+        start_y:0.0,
+        gab:0.3,
+        lab_size:12
+    };
     let a = 54;
     App::build()
         .insert_resource(Msaa { samples: 4 })
+        .insert_resource(config)
         //       .add_startup_stagrtup_stage(CoreStage::Startup, "player", SystemStage::parallel())
         .add_startup_stage("player", SystemStage::parallel())
         .add_startup_stage_after("player", "lab", SystemStage::parallel())
@@ -46,6 +54,7 @@ fn main() {
         .add_plugin(P::RapierPhysicsPlugin::<P::NoUserData>::default())
         .add_startup_system(setup::setup_plane.system())
         .add_startup_system(setup::setup_light_camera.system())
+        .add_system(systems::sync_rigid_bodies.system())
         .add_system(systems::move_player.system())
         .run();
 }
