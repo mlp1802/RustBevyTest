@@ -24,7 +24,10 @@ use physics::rigid_bodies;
 //
 //    }
 //}
-
+enum Stages  {
+    Player,
+    Lab
+}
 fn main() {
     //    let a = 54;
     //    App::build()
