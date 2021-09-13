@@ -1,6 +1,0 @@
-* 1) Config
-* 2) Camera
-* 3) Move player
-* :4) Setup dots
-5) Collision dots
-6) Stages as Enum

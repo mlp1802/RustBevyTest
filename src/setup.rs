@@ -1,5 +1,5 @@
 use crate::meshes::primitives;
-use crate::model;
+use crate::model::*;
 use crate::physics::colliders;
 use crate::physics::rigid_bodies;
 use bevy::prelude::*;
@@ -13,8 +13,9 @@ pub fn setup_labyrinth(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    config: Res<model::Config>,
-    mut transforms: Query<(&mut Transform, &mut P::RigidBodyPosition, &model::Player)>,
+    mut game: Query<&mut Game>,
+    config: Res<Config>,
+    mut transforms: Query<(&mut Transform, &mut P::RigidBodyPosition, &Player)>,
 ) {
     //println!("setup lab");
     let gab = config.gab;
@@ -43,7 +44,7 @@ pub fn setup_labyrinth(
             .insert_bundle(ridig_body)
             .insert(Transform::default())
             .insert(P::RigidBodyPositionSync::Discrete)
-            .insert(model::Wall {});
+            .insert(Wall {});
                            };
 
     let mut create_dot = |commands: &mut Commands,
@@ -68,7 +69,7 @@ pub fn setup_labyrinth(
                                   .insert_bundle(rigid_body)
                                   .insert(Transform::default())
                                   .insert(P::RigidBodyPositionSync::Discrete)
-                                  .insert(model::Dot {});
+                                  .insert(Dot {});
 
 
     };
@@ -120,18 +121,35 @@ pub fn setup_labyrinth(
         pos.position.translation.x = start_player_x;
         pos.position.translation.z = start_player_z;
     }
-    println!("DOTS {}",dots)
+    println!("DOTS ROFL {}",dots);
+    for mut g in game.iter_mut() {
+        g.dots = dots;
+    }
+
+
+}
+
+pub fn setup_game(
+    mut commands: Commands,
+    config: Res<Config>,
+) {
+    let game:Game = Game  {
+        points:0,
+        dots:0,
+        status:GameStatus::Running
+    };
+    commands.spawn().insert(game);
 }
 
 pub fn setup_player(
     mut commands: Commands,
 
-    config: Res<model::Config>,
+    config: Res<Config>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     println!("setup player");
-    let player = model::Player {};
+    let player = Player {};
     let size = config.gab / 2.5;
     let x = 0.0;
     let y = size;
@@ -157,7 +175,7 @@ pub fn setup_player(
 pub fn setup_light_camera(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    config: Res<model::Config>,
+    config: Res<Config>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // light

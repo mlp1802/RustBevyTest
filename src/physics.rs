@@ -8,6 +8,8 @@ pub mod colliders {
 
     pub fn cuboid_collider(size_x: f32, size_y: f32, size_z: f32) -> ColliderBundle {
         ColliderBundle {
+            //flags: ColliderFlags::default(),
+            flags: (ActiveEvents::CONTACT_EVENTS | ActiveEvents::INTERSECTION_EVENTS).into(),
             shape: ColliderShape::cuboid(size_x, size_y, size_z),
             ..Default::default()
         }
@@ -19,6 +21,7 @@ pub mod colliders {
 
     pub fn ball_collider(size: f32) -> ColliderBundle {
         ColliderBundle {
+            flags: (ActiveEvents::CONTACT_EVENTS | ActiveEvents::INTERSECTION_EVENTS).into(),
             shape: ColliderShape::ball(size),
             ..Default::default()
         }

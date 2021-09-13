@@ -1,0 +1,22 @@
+#+title: Bevy test todo
+* DONE Config
+  CLOSED: [2021-09-11 Sat 15:48]
+* DONE Camera
+  CLOSED: [2021-09-11 Sat 15:48]
+* DONE Move player
+  CLOSED: [2021-09-11 Sat 15:48]
+* DONE Setup dots
+  CLOSED: [2021-09-11 Sat 15:49]
+* DONE Stages as Enum
+  CLOSED: [2021-09-11 Sat 15:49]
+* TODO [/] Collision detection
+  1. [X] Learn how to do it
+  2. [X] Collision between dots and player
+     + [X] Increase points
+* DONE check if game over, use change detection
+  CLOSED: [2021-09-13 Mon 22:17]
+* TODO Enemy
+  * [ ] Spawn
+  * [ ] Move
+  * [ ] Collision detection with player, check if over
+* Learn events, try to use events
