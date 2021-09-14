@@ -1,20 +1,27 @@
 use crate::model::*;
 use bevy::{prelude::*, render::render_graph::Command};
 use bevy_rapier3d::prelude::*;
-use std::{ops::Mul, option::*};
+use std::{ops::{Mul, Sub}, option::*};
 use crate::query_utils::*;
-pub fn sync_rigid_bodies(
+pub fn move_monster(
     mut commands: Commands,
-    mut transforms: Query<(&mut Transform, &RigidBodyPosition)>,
+    mut player: Query<(&RigidBodyPosition,&Player)>,
+    mut monster: Query<(&mut RigidBodyVelocity, &RigidBodyPosition,&Monster,&RigidBodyMassProps)>,
+
 ) {
     let t: Transform;
     let r: RigidBodyPosition;
-    //  r.position.
+    //r.position.translation.vector.sub(rhs)
 
-    for (mut tramsform, mut pos) in transforms.iter_mut() {
-        //transform.translation  = pos.position.translation;
-        //transform.translation.y = pos.position.translation.y;
-        //transform.translation.z = pos.position.translation.z;
+
+    for (mut forces, monster_pos ,_monster,props) in monster.iter_mut() {
+        for (player_pos, _player) in player.iter_mut() {
+            let player_translation = player_pos.position.translation;
+            let monster_translation = monster_pos.position.translation;
+            let dir = player_translation.vector-monster_translation.vector;
+            let f = 0.0002;
+            forces.apply_impulse(props, dir.normalize().mul(f).into());
+        }
     }
 }
 
@@ -63,6 +70,30 @@ pub fn move_player(
         });
     }
 }
+pub fn collides<A,B>(query1: Query<&A>,query2: Query<&B>,e1:Entity,e2:Entity)->(bool,bool)
+where
+    A: std::marker::Sync,
+    A: std::marker::Send,
+    A: 'static,
+    B: std::marker::Sync,
+    B: std::marker::Send,
+    B: 'static
+{
+    let a1 = query1.get_component::<A>(e1);
+    let a2 = query1.get_component::<A>(e2);
+    let a3 = query2.get_component::<A>(e1);
+    let a4 = query2.get_component::<A>(e2);
+
+    let b1 = query1.get_component::<B>(e1);
+    let b2 = query1.get_component::<B>(e2);
+    let b3 = query2.get_component::<B>(e1);
+    let b4 = query2.get_component::<B>(e2);
+    let alist = vec![a1,a2,a3,a4];
+    let blist = vec![b1,b2,b3,b4];
+    let hasA = alist.iter().find (|x|{x.is_ok()}).is_some();
+    let hasB = blist.iter().find (|x|{x.is_ok()}).is_some();
+    (hasA,hasB)
+}
 /* Test intersections inside of a system. */
 
 pub fn collision_detection(
@@ -71,6 +102,7 @@ pub fn collision_detection(
     mut intersection_events: EventReader<IntersectionEvent>,
     mut contact_events: EventReader<ContactEvent>,
     player: Query<(&Player)>,
+    monster: Query<(&Monster)>,
     dots: Query<(&Dot)>,
 ) {
     for intersection_event in intersection_events.iter() {
@@ -108,24 +140,15 @@ pub fn collision_detection(
     for contact_event in contact_events.iter() {
         match contact_event {
             ContactEvent::Started(h1, h2) => {
-                let e1 = h1.entity();
+                let e1  = h1.entity();
                 let e2 = h2.entity();
                 let result1 = player.get_component::<Player>(e1);
-                let result2 = dots.get_component::<Dot>(e2);
-                let result3 = player.get_component::<Player>(e2);
-                let result4 = dots.get_component::<Dot>(e1);
-                let c1 = (result1, result2, result3, result4);
-                match c1 {
-                    (Ok(player), Ok(dot), _, _) => {
-                        print!("LOL1")
-                    }
-                    (_, _, Ok(dot), Ok(player)) => {
-                        print!("LOL2")
-                    }
-                    _ => {}
-                }
+                let result2 = dots.get_component::<Monster>(e2);
+
             }
-            ContactEvent::Stopped(h1, h2) => {}
+            ContactEvent::Stopped(h1, h2) => {
+                println!("Stopped");
+            }
         }
     }
 }

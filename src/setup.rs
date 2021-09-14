@@ -7,6 +7,7 @@ use bevy_rapier3d::prelude as P;
 use bevy_rapier3d::prelude::ColliderType;
 use bevy_rapier3d::prelude::RigidBodyType;
 use rand::Rng;
+use std::cell::RefCell;
 use std::{borrow::BorrowMut, primitive};
 
 pub fn setup_labyrinth(
@@ -17,81 +18,73 @@ pub fn setup_labyrinth(
     config: Res<Config>,
     mut transforms: Query<(&mut Transform, &mut P::RigidBodyPosition, &Player)>,
 ) {
-    //println!("setup lab");
     let gab = config.gab;
     let size = config.lab_size;
-    let mut c = &commands;
     let mut dots = 0;
-    let mut create_wall = |commands: &mut Commands,
-                           meshes: &mut ResMut<Assets<Mesh>>,
-                           materials: &mut ResMut<Assets<StandardMaterial>>,
-                           x: u32,
-                           z: u32| {
+    let commands = RefCell::new(commands);
+    let materials = RefCell::new(materials);
+    let meshes: RefCell<ResMut<Assets<Mesh>>> = RefCell::new(meshes);
+    // Create wall
+    let mut create_wall = |x: u32, z: u32| {
         let x = x as f32 * gab;
         let y = 0.0;
         let z = z as f32 * gab;
         let mut ridig_body = rigid_bodies::rigid_body(x, y, z);
         let collider = colliders::cuboid_collider(gab / 2.0, 1.0, gab / 2.0);
-        let mut mesh = primitives::cube(meshes, materials, gab);
+        let mut mesh = primitives::cube(&mut meshes.borrow_mut(), &mut materials.borrow_mut(), gab);
         ridig_body.body_type = P::RigidBodyType::Static;
-        mesh.transform.translation.x = x;
-        mesh.transform.translation.z = z;
-        mesh.transform.translation.y = y;
         commands
+            .borrow_mut()
             .spawn()
             .insert_bundle(collider)
             .insert_bundle(mesh)
             .insert_bundle(ridig_body)
-            .insert(Transform::default())
             .insert(P::RigidBodyPositionSync::Discrete)
             .insert(Wall {});
-                           };
+    };
 
-    let mut create_dot = |commands: &mut Commands,
-                          meshes: &mut ResMut<Assets<Mesh>>,
-                          materials: &mut ResMut<Assets<StandardMaterial>>,
-                          x: u32,
-                          z: u32| {
-                              let x = x as f32 * gab;
-                              let z = z as f32 * gab;
-                              let size = gab/5.0;
-                              let y = gab/2.0;
-                              dots = dots+1;
+    // Create dot
+    let mut create_dot = |x: u32, z: u32| {
+        let x = x as f32 * gab;
+        let z = z as f32 * gab;
+        let size = gab / 5.0;
+        let y = gab / 2.0;
+        dots = dots + 1;
 
-                              let mut rigid_body = rigid_bodies::rigid_body(x, y, z);
-                              let mut collider = colliders::ball_collider(size);
-                              collider.collider_type = ColliderType::Sensor;
-                              let mut mesh = primitives::ball(meshes, materials, size);
-                              rigid_body.body_type = RigidBodyType::Static;
-                              commands.spawn()
-                                .insert_bundle(mesh)
-                                  .insert_bundle(collider)
-                                  .insert_bundle(rigid_body)
-                                  .insert(Transform::default())
-                                  .insert(P::RigidBodyPositionSync::Discrete)
-                                  .insert(Dot {});
-
-
+        let mut rigid_body = rigid_bodies::rigid_body(x, y, z);
+        let mut collider = colliders::ball_collider(size);
+        collider.collider_type = ColliderType::Sensor;
+        let mut mesh =
+            primitives::ball(&mut meshes.borrow_mut(), &mut materials.borrow_mut(), size);
+        rigid_body.body_type = RigidBodyType::Static;
+        commands
+            .borrow_mut()
+            .spawn()
+            .insert_bundle(mesh)
+            .insert_bundle(collider)
+            .insert_bundle(rigid_body)
+            .insert(Transform::default())
+            .insert(P::RigidBodyPositionSync::Discrete)
+            .insert(Dot {});
     };
 
     //outer walls
     for x in 0..size + 1 {
-        create_wall(&mut commands, &mut meshes, &mut materials, x, 0);
-        create_wall(&mut commands, &mut meshes, &mut materials, x, size);
-        create_wall(&mut commands, &mut meshes, &mut materials, 0, x);
-        create_wall(&mut commands, &mut meshes, &mut materials, size, x);
+        create_wall(x, 0);
+        create_wall(x, size);
+        create_wall(0, x);
+        create_wall(size, x);
     }
     //dots in between
     for x in (1..size).step_by(1) {
-        if x%2==0 {
-            create_dot(&mut commands, &mut meshes, &mut materials, x, 1);
-            create_dot(&mut commands, &mut meshes, &mut materials, x, size-1);
-        }else {
+        if x % 2 == 0 {
+            create_dot(x, 1);
+            create_dot(x, size - 1);
+        } else {
             for z in 1..size {
-                create_dot(&mut commands, &mut meshes, &mut materials, x, z);
+                create_dot(x, z);
             }
         }
-
     }
     //inner walls
     for x in (2..size).step_by(2) {
@@ -100,11 +93,10 @@ pub fn setup_labyrinth(
             let mut rng = rand::thread_rng();
             let v: f32 = rng.gen();
             if v < d {
-                create_wall(&mut commands, &mut meshes, &mut materials, x, z);
+                create_wall(x, z);
             } else {
-
                 //create_wall(&mut commands, &mut meshes, &mut materials, x, z);
-                create_dot(&mut commands, &mut meshes, &mut materials, x, z);
+                create_dot(x, z);
             }
 
             let v: f32 = rng.gen();
@@ -114,63 +106,54 @@ pub fn setup_labyrinth(
         }
     }
 
-    let f = 0.01;
-    let start_player_x = (config.start_x + gab * 1.0) + f;
-    let start_player_z = (config.start_y + gab * 1.0) + f;
-    for (mut transform, mut pos, mut player) in transforms.iter_mut() {
-        pos.position.translation.x = start_player_x;
-        pos.position.translation.z = start_player_z;
-    }
-    println!("DOTS ROFL {}",dots);
     for mut g in game.iter_mut() {
         g.dots = dots;
     }
-
-
 }
 
-pub fn setup_game(
-    mut commands: Commands,
-    config: Res<Config>,
-) {
-    let game:Game = Game  {
-        points:0,
-        dots:0,
-        status:GameStatus::Running
+pub fn setup_game(mut commands: Commands, config: Res<Config>) {
+    let game: Game = Game {
+        points: 0,
+        dots: 0,
+        status: GameStatus::Running,
     };
     commands.spawn().insert(game);
 }
 
-pub fn setup_player(
+pub fn setup_player_and_monster(
     mut commands: Commands,
-
     config: Res<Config>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    println!("setup player");
-    let player = Player {};
-    let size = config.gab / 2.5;
-    let x = 0.0;
-    let y = size;
-    let z = 1.0;
-    let rigidBody = rigid_bodies::rigid_body(x, y, x);
-    let ball_collider = colliders::ball_collider(size);
-    let mut ball_shape = primitives::ball(&mut meshes, &mut materials, size);
-    ball_shape.transform.translation.x = x;
-    ball_shape.transform.translation.y = y;
-    ball_shape.transform.translation.z = z;
+    let gab = config.gab;
+    let mut setup_entity = |x: u32, z: u32, e: Ent| {
+        let size = config.gab / 2.5;
+        let x = x as f32 * gab;
+        let z = z as f32 * gab;
+        let y = size;
+        let rigid_body = rigid_bodies::rigid_body(x, y, z);
+        let ball_collider = colliders::ball_collider(size);
+        let ball_shape =
+            primitives::ball(&mut meshes.borrow_mut(), &mut materials.borrow_mut(), size);
+        let spawn = &mut commands.spawn();
+        let c = spawn
+            .insert_bundle(ball_collider)
+            .insert_bundle(ball_shape)
+            .insert_bundle(rigid_body)
+            .insert(P::RigidBodyPositionSync::Discrete);
+        match e {
+            Ent::Player => {
+                c.insert(Player {});
+            }
+            Ent::Monster => {
+                c.insert(Monster {});
+            }
+        };
+    };
 
-    commands
-        .spawn()
-        .insert_bundle(rigidBody)
-        .insert(Transform::default())
-        .insert(P::RigidBodyPositionSync::Discrete)
-        .insert_bundle(ball_collider)
-        .insert_bundle(ball_shape)
-        .insert(player);
-
-    //commands.sp
+    setup_entity(1, 1, Ent::Player);
+    setup_entity(config.lab_size - 1, config.lab_size - 1, Ent::Monster);
 }
 pub fn setup_light_camera(
     mut commands: Commands,

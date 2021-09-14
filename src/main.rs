@@ -1,3 +1,4 @@
+#![feature(nll)]
 use bevy::prelude::*;
 mod meshes;
 mod model;
@@ -62,14 +63,14 @@ fn main() {
         //       .add_startup_stagrtup_stage(CoreStage::Startup, "player", SystemStage::parallel())
         .add_startup_stage(Stages::Player, SystemStage::parallel())
         .add_startup_stage_after(Stages::Player, Stages::Lab, SystemStage::parallel())
-        .add_startup_system_to_stage(Stages::Player, setup::setup_player.system())
+        .add_startup_system_to_stage(Stages::Player, setup::setup_player_and_monster.system())
         .add_startup_system_to_stage(Stages::Lab, setup::setup_labyrinth.system())
         .add_plugins(DefaultPlugins)
         .add_plugin(P::RapierPhysicsPlugin::<P::NoUserData>::default())
         .add_startup_system(setup::setup_plane.system())
         .add_startup_system(setup::setup_light_camera.system())
         .add_startup_system(setup::setup_game.system())
-        .add_system(systems::sync_rigid_bodies.system())
+        .add_system(systems::move_monster.system())
         .add_system(systems::move_player.system())
         .add_system(systems::collision_detection.system())
         .add_system(systems::check_if_game_over.system())

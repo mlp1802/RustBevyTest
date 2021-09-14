@@ -1,3 +1,9 @@
+pub enum Ent {
+    Player,
+    Monster
+}
+
+
 #[derive(Debug, Copy, Clone)]
 pub enum GameStatus {
     Running,
@@ -17,7 +23,7 @@ pub struct Config {
 }
 
 pub struct Player {}
-
+pub struct Monster {}
 pub struct Wall {}
 
 pub struct Dot {}
