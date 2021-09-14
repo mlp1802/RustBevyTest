@@ -9,15 +9,17 @@
   CLOSED: [2021-09-11 Sat 15:49]
 * DONE Stages as Enum
   CLOSED: [2021-09-11 Sat 15:49]
-* TODO [/] Collision detection
+* DONE [/] Collision detection
+  CLOSED: [2021-09-14 Tue 22:23]
   1. [X] Learn how to do it
   2. [X] Collision between dots and player
      + [X] Increase points
 * DONE check if game over, use change detection
   CLOSED: [2021-09-13 Mon 22:17]
-* TODO Enemy
-  * [ ] Spawn
-  * [ ] Move
-  * [ ] Collision detection with player, check if
-* More enemies..
+* DONE Enemy
+  CLOSED: [2021-09-14 Tue 22:23]
+  * [X] Spawn
+  * [X] Move
+  * [X] Collision detection with player, check if
+* TODO More enemies..
 * Learn events, try to use events
