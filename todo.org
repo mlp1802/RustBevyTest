@@ -18,5 +18,6 @@
 * TODO Enemy
   * [ ] Spawn
   * [ ] Move
-  * [ ] Collision detection with player, check if over
+  * [ ] Collision detection with player, check if
+* More enemies..
 * Learn events, try to use events

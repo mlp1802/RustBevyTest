@@ -25,5 +25,6 @@ pub struct Config {
 pub struct Player {}
 pub struct Monster {}
 pub struct Wall {}
+pub struct Plane {}
 
 pub struct Dot {}

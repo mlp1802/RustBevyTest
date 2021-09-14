@@ -70,10 +70,9 @@ fn main() {
         .add_startup_system(setup::setup_plane.system())
         .add_startup_system(setup::setup_light_camera.system())
         .add_startup_system(setup::setup_game.system())
-        .add_system(systems::move_monster.system())
+        .add_system(systems::move_monsters.system())
         .add_system(systems::move_player.system())
         .add_system(systems::collision_detection.system())
-        .add_system(systems::check_if_game_over.system())
     //.add_system(systems::collision_detection.system())
 
         .run();

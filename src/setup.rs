@@ -153,7 +153,11 @@ pub fn setup_player_and_monster(
     };
 
     setup_entity(1, 1, Ent::Player);
-    setup_entity(config.lab_size - 1, config.lab_size - 1, Ent::Monster);
+    for i in (0..config.lab_size).step_by(2) {
+        setup_entity(i+1, config.lab_size - 1, Ent::Monster);
+    }
+    
+    
 }
 pub fn setup_light_camera(
     mut commands: Commands,
@@ -189,5 +193,6 @@ pub fn setup_plane(
     commands
         .spawn()
         .insert_bundle(collider)
-        .insert_bundle(plane_shape);
+        .insert_bundle(plane_shape)
+        .insert(Plane {});
 }
